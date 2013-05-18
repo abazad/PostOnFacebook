@@ -45,7 +45,7 @@ $naitik = $facebook->api('/naitik');
 <!doctype html>
 <html xmlns:fb="http://www.facebook.com/2008/fbml">
   <head>
-    <title>php-sdk</title>
+    <title>Post On Facebook Testpage</title>
     <style>
       body {
         font-family: 'Lucida Grande', Verdana, Arial, sans-serif;
@@ -60,7 +60,7 @@ $naitik = $facebook->api('/naitik');
     </style>
   </head>
   <body>
-    <h1>php-sdk</h1>
+    <h1>Post On Facebook Testpage</h1>
 
     <?php if ($user): ?>
       <a href="<?php echo $logoutUrl; ?>">Logout</a>
