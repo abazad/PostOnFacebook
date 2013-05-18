@@ -35,7 +35,12 @@ if ($user) {
 if ($user) {
   $logoutUrl = $facebook->getLogoutUrl();
 } else {
-  $loginUrl = $facebook->getLoginUrl();
+  $loginUrl = $facebook->getLoginUrl(
+    array(
+                'scope'         => 'manage_pages,offline_access,publish_stream',
+                'redirect_uri'  => 'http://www.der-poth.de/PostOnFacebook/posttest.php',
+            )
+    );
 }
 
 // This call will always work since we are fetching public data.
