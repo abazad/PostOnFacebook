@@ -1,51 +1,28 @@
 <?php
-/**
- * Copyright 2013 Der-Poth
- *
- */
+// Remember to copy files from the SDK's src/ directory to a
+// directory in your application on the server, such as php-sdk/
+require_once('facebook.php');
 
-require 'facebook.php';
+// Here you need to put your post's data in:
+$attachment = array(
+        'access_token' => $token,
+        'message' => 'Test Post Message',
+        'name' => 'TestPost',
+        'link' => 'http://www.google.de',
+        'description' => 'Test Post Description',
+);
 
-// Create our Application instance (replace this with your appId and secret).
-$facebook = new Facebook(array(
-  'appId'  => '458758440879962',
+$config = array(
+  'appId' => '458758440879962',
   'secret' => 'db98c0abc9732981a0aebc3f32d8dc85',
-));
+);
 
-// Get User ID
-$user = $facebook->getUser();
+// Don't make any changes for configuration
+// Below this line!
+// ========================================
 
-// We may or may not have this data based on whether the user is logged in.
-//
-// If we have a $user id here, it means we know the user is logged into
-// Facebook, but we don't know if the access token is valid. An access
-// token is invalid if the user logged out of Facebook.
-
-if ($user) {
-  try {
-    // Proceed knowing you have a logged in user who's authenticated.
-    $user_profile = $facebook->api('/me');
-  } catch (FacebookApiException $e) {
-    error_log($e);
-    $user = null;
-  }
-}
-
-// Login or logout url will be needed depending on current user state.
-if ($user) {
-  $logoutUrl = $facebook->getLogoutUrl();
-} else {
-  $loginUrl = $facebook->getLoginUrl(
-    array(
-                'scope'         => 'manage_pages,offline_access,publish_stream',
-                'redirect_uri'  => 'http://www.der-poth.de/PostOnFacebook/posttest.php',
-            )
-    );
-}
-
-// This call will always work since we are fetching public data.
-$naitik = $facebook->api('/naitik');
-
+$facebook = new Facebook($config);
+$user_id = $facebook->getUser();
 ?>
 <!doctype html>
 <html xmlns:fb="http://www.facebook.com/2008/fbml">
@@ -65,32 +42,63 @@ $naitik = $facebook->api('/naitik');
     </style>
   </head>
   <body>
-    <h1>Post On Facebook Testpage</h1>
 
-    <?php if ($user): ?>
-      <a href="<?php echo $logoutUrl; ?>">Logout</a>
-    <?php else: ?>
-      <div>
-        Login using OAuth 2.0 handled by the PHP SDK:
-        <a href="<?php echo $loginUrl; ?>">Login with Facebook</a>
-      </div>
-    <?php endif ?>
+  <?php
+    if($user_id) {
 
-    <h3>PHP Session</h3>
-    <pre><?php print_r($_SESSION); ?></pre>
+      // We have a user ID, so probably a logged in user.
+      // If not, we'll get an exception, which we handle below.
+      try {
+        //get pages or applications where you are administrator
+        $accounts = $this->facebook->api('/me/accounts');
 
-    <?php if ($user): ?>
-      <h3>You</h3>
-      <img src="https://graph.facebook.com/<?php echo $user; ?>/picture">
+        //page where i want to post
+        $page_id = '166719733495940';
 
-      <h3>Your User Object (/me)</h3>
-      <pre><?php print_r($user_profile); ?></pre>
-    <?php else: ?>
-      <strong><em>You are not Connected.</em></strong>
-    <?php endif ?>
+        foreach($accounts['data'] as $account)
+        {
+           if($account['id'] == $page_id)
+           {
+              $token = $account['access_token'];
+           }
+        }
 
-    <h3>Public profile of Naitik</h3>
-    <img src="https://graph.facebook.com/naitik/picture">
-    <?php echo $naitik['name']; ?>
-  </body>
-</html>
+        try{
+        $res = $this->facebook->api('/'.$page_id.'/feed','POST',$attachment);
+
+        } catch (Exception $e){
+
+            echo $e->getMessage();
+        }  
+
+        echo '<pre>Post ID: ' . $res['id'] . '</pre>';
+
+        // Give the user a logout link 
+        echo '<br /><a href="' . $facebook->getLogoutUrl() . '">logout</a>';
+      } catch(FacebookApiException $e) {
+        // If the user is logged out, you can have a 
+        // user ID even though the access token is invalid.
+        // In this case, we'll get an exception, so we'll
+        // just ask the user to login again here.
+        $login_url = $facebook->getLoginUrl( array(
+                       'scope' => 'manage_pages,offline_access,publish_stream'
+                       )); 
+        echo 'Please <a href="' . $login_url . '">login.</a>';
+        echo '<pre>Error-Type: ' . $e->getType() . '</pre>';
+        echo '<pre>Error-Msg : ' . $e->getMessage() . '</pre>';
+      }   
+    } else {
+
+      // No user, so print a link for the user to login
+      // To post to a user's wall, we need publish_stream permission
+      // We'll use the current URL as the redirect_uri, so we don't
+      // need to specify it here.
+      $login_url = $facebook->getLoginUrl( array( 'scope' => 'manage_pages,offline_access,publish_stream' ) );
+      echo 'Please <a href="' . $login_url . '">login.</a>';
+
+    } 
+
+  ?>      
+
+  </body> 
+</html>  
