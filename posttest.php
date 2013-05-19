@@ -50,7 +50,7 @@ $user_id = $facebook->getUser();
       // If not, we'll get an exception, which we handle below.
       try {
         //get pages or applications where you are administrator
-        $accounts = $this->facebook->api('/me/accounts');
+        $accounts = $facebook->api('/me/accounts');
 
         //page where i want to post
         $page_id = '166719733495940';
@@ -64,7 +64,7 @@ $user_id = $facebook->getUser();
         }
 
         try{
-        $res = $this->facebook->api('/'.$page_id.'/feed','POST',$attachment);
+        $res = $facebook->api('/'.$page_id.'/feed','POST',$attachment);
 
         } catch (Exception $e){
 
