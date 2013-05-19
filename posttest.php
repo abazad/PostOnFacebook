@@ -5,7 +5,6 @@ require_once('facebook.php');
 
 // Here you need to put your post's data in:
 $attachment = array(
-        'access_token' => $token,
         'message' => 'Test Post Message',
         'name' => 'TestPost',
         'link' => 'http://www.google.de',
@@ -60,11 +59,12 @@ $user_id = $facebook->getUser();
            if($account['id'] == $page_id)
            {
               $token = $account['access_token'];
+              $attachment['access_token'] = $token;
            }
         }
 
         try{
-        $res = $facebook->api('/'.$page_id.'/feed','POST',$attachment);
+          $res = $facebook->api('/'.$page_id.'/feed','POST',$attachment);
 
         } catch (Exception $e){
 
